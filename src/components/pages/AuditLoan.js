@@ -26,12 +26,12 @@ export default function AuditLoan({ match, location }) {
 
     const calculatePaidback = useCallback(() => {
         let totalaudited = 0;
-        loaninfo.audits.map(aud => {
+        loaninfo?.audits?.map(aud => {
             totalaudited += aud.amount
             return 0;
         })
         setPaidback(totalaudited)
-    }, [loaninfo.audits])
+    }, [loaninfo])
 
     /*const getAudits = useCallback(async () => {
         try {
@@ -49,7 +49,7 @@ export default function AuditLoan({ match, location }) {
 
     const getGrarentor = useCallback(async () => {
         try {
-            if (loaninfo.guarentorid !== 'n/a') {
+            if (loaninfo?.guarentorid !== 'n/a') {
                 const { data } = await axios.get(`/api/admin/get/user/${loaninfo.guarentorid}`)
                 if (data.success) {
                     setGuarentor(data.user.fullname)
@@ -60,7 +60,7 @@ export default function AuditLoan({ match, location }) {
         } catch (error) {
             setErrorMessage(error.message)
         }
-    }, [loaninfo.guarentorid])
+    }, [loaninfo])
     useEffect(() => {
         getGrarentor()
         calculatePaidback()
@@ -76,15 +76,15 @@ export default function AuditLoan({ match, location }) {
             <div className="auditloan" style={{ display: 'flex', flexDirection: 'row', justifyContent: "space-evenly" }}>
                 <form className="form" onSubmit={handleSubmit(auditLoan)}>
                     <div className="form__control">
-                        <h2>Loan : {loaninfo.loanname}</h2>
-                        {loaninfo.loancomment ? <p>{loaninfo.loancomment}</p> : null}
-                        <p>Tk. {loaninfo.loanamount}</p>
+                        <h2>Loan : {loaninfo?.loanname}</h2>
+                        {loaninfo?.loancomment ? <p>{loaninfo?.loancomment}</p> : null}
+                        <p>Tk. {loaninfo?.loanamount}</p>
                         <p>Loan paidback: {paidback}</p>
-                        <p>Installments: {loaninfo.audits.length}/{loaninfo.installments}</p>
-                        <p>Min Amount per installments: Tk. {loaninfo.mininstallmentfee}</p>
-                        <p>Guarentor: {loaninfo.guarentorid === 'n/a' ? "n/a" : <Link to={`/user/${loaninfo.guarentorid}`}>{guarentor}</Link>}</p>
+                        <p>Installments: {loaninfo?.audits?.length}/{loaninfo?.installments}</p>
+                        <p>Min Amount per installments: Tk. {loaninfo?.mininstallmentfee}</p>
+                        <p>Guarentor: {loaninfo?.guarentorid === 'n/a' ? "n/a" : <Link to={`/user/${loaninfo?.guarentorid}`}>{guarentor}</Link>}</p>
                     </div>
-                    {(paidback === loaninfo.loanamount || paidback > loaninfo.loanamount) ? (
+                    {(paidback === loaninfo?.loanamount || paidback > loaninfo?.loanamount) ? (
                         <h1>Loan payback complete</h1>
                     ) : (
 
@@ -92,11 +92,11 @@ export default function AuditLoan({ match, location }) {
 
                                 <div className="form__control">
                                     <label className="required" htmlFor="amount">Loan payback amount</label>
-                                    <input type="number" id="amount" name="amount" placeholder={`minimum Tk. ${loaninfo.mininstallmentfee}`} ref={register({
+                                    <input type="number" id="amount" name="amount" placeholder={`minimum Tk. ${loaninfo?.mininstallmentfee}`} ref={register({
                                         required: true,
                                         min: {
-                                            value: loaninfo.mininstallmentfee,
-                                            message: `Not les than Tk. ${loaninfo.mininstallmentfee}`
+                                            value: loaninfo?.mininstallmentfee,
+                                            message: `Not les than Tk. ${loaninfo?.mininstallmentfee}`
                                         }
                                     }
                                     )} />
@@ -112,12 +112,12 @@ export default function AuditLoan({ match, location }) {
                 </form >
                 <div className="audits">
                     <h1>Audits</h1>
-                    {loaninfo.audits?.map((aud, id) => (
+                    {loaninfo?.audits?.map((aud, id) => (
                         <div className="audits__card" key={id}>
                             <p className="card__id">{id + 1}{" )"}</p>
                             <div>
                                 <h4>Amount {aud.amount}</h4>
-                                <p>{aud.auditdate.toLocaleString()}</p>
+                                <p>{new Date(aud.auditdate).toLocaleString()}</p>
                             </div>
                         </div>
                     ))}
