@@ -8,10 +8,13 @@ export default function AddUser() {
     const [errorMessage, setErrorMessage] = useState(null)
 
     const addUser = async (values) => {
-        console.log(values)
         try {
             const { data } = await axios.post("/api/admin/add/user", values)
-            console.log(data)
+            if (data.success) {
+                history.push('/users')
+            } else {
+                setErrorMessage(data.message)
+            }
         } catch (error) {
             setErrorMessage(error.message)
         }
