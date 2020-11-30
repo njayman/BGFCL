@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import axios from 'axios'
 
@@ -6,7 +6,7 @@ export default function AdminSetting({ setErrorMessage }) {
     const [editpass, setEditpass] = useState(false)
     const [editemail, setEditemail] = useState(false)
     const [addAdmins, setAddAdmins] = useState(false)
-    const [admin, setAdmins] = useState([])
+    const [admins, setAdmins] = useState([])
     const { register, handleSubmit, errors, watch } = useForm()
     const generateAdminKey = async () => {
 
@@ -14,6 +14,21 @@ export default function AdminSetting({ setErrorMessage }) {
     const addNewAdmins = async values => {
         try {
             const { data } = await axios.post('/api/admin/addadmin', values)
+            if (data.success) {
+                getAdmins()
+                setAddAdmins(data.admins)
+            } else {
+                setErrorMessage(data.message)
+            }
+
+        } catch (error) {
+            setErrorMessage(error.message)
+        }
+    }
+
+    const getAdmins = async () => {
+        try {
+            const { data } = await axios.get('/api/admin/getadmins')
             if (data.success) {
                 setAdmins(data.admins)
             } else {
@@ -24,6 +39,10 @@ export default function AdminSetting({ setErrorMessage }) {
             setErrorMessage(error.message)
         }
     }
+
+    useEffect(() => {
+        getAdmins()
+    }, [])
 
     return (
         <div className="settingform" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -88,6 +107,16 @@ export default function AdminSetting({ setErrorMessage }) {
                     </div>
                 </form>
             )}
+            <div className="admin__list">
+                <h1>All admins</h1>
+                {admins?.map((ad, id) => (
+                    <fieldset key={id}>
+                        <legend><h1>{id + 1}</h1></legend>
+                        <p>{ad.name}</p>
+                        <p>{ad.email}</p>
+                    </fieldset>
+                ))}
+            </div>
         </div>
     )
 }
