@@ -1,15 +1,32 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
+import { useSelector } from "react-redux";
 import axios from 'axios'
 
 export default function AdminSetting({ setErrorMessage }) {
+    const { admin } = useSelector(state => state.adminauth)
     const [editpass, setEditpass] = useState(false)
     const [editemail, setEditemail] = useState(false)
     const [addAdmins, setAddAdmins] = useState(false)
+    const [newPassword, setNewPassword] = useState('')
     const [admins, setAdmins] = useState([])
     const { register, handleSubmit, errors, watch } = useForm()
     const generateAdminKey = async () => {
 
+    }
+    const changePassword = async e => {
+        e.preventDefault()
+        try {
+            const { data } = await axios.post(`/api/admin/changepassword/${admin.id}`, { newPassword: newPassword })
+            if (data.success) {
+                getAdmins()
+                setAddAdmins(data.admins)
+            } else {
+                setErrorMessage(data.message)
+            }
+        } catch (error) {
+            setErrorMessage(error.message)
+        }
     }
     const addNewAdmins = async values => {
         try {
@@ -47,11 +64,11 @@ export default function AdminSetting({ setErrorMessage }) {
     return (
         <div className="settingform" style={{ display: 'flex', flexDirection: 'column' }}>
             <h1>Admin Settings</h1>
-            <form className="form">
+            <form className="form" onSubmit={changePassword}>
                 <div className="form__control">
                     <label>Change Password</label>
                     <div style={{ display: "flex", flexDirection: "row" }}>
-                        <input disabled={!editpass} type="password" style={{ minWidth: "300px" }} />
+                        <input disabled={!editpass} type="password" style={{ minWidth: "300px" }} onChange={e => setNewPassword(e.target.value)} />
                         <button type="button" className="action__button" onClick={() => setEditpass(ep => !ep)}>{editpass ? "Cancel" : "Edit Password"}</button>
                         {editpass ? (<button className="action__button" type="submit">Change Password</button>) : null}
                     </div>
