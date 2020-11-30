@@ -1,13 +1,19 @@
-import { Fragment } from 'react';
+import { Fragment, useEffect } from 'react';
+import { Switch } from 'react-router-dom';
 import './App.scss';
 import MainBody from './components/layouts/MainBody';
-import NavBar from './components/layouts/NavBar';
+import { setUsers } from './redux/actions/AuthActions';
 
 function App() {
+  //console.log(props)
+  useEffect(() => {
+    setUsers()
+  }, [])
   return (
     <Fragment>
-      <NavBar />
-      <MainBody />
+      <Switch>
+        <MainBody />
+      </Switch>
     </Fragment>
   );
 }
