@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import axios from 'axios'
 
@@ -26,7 +26,7 @@ export default function AdminSetting({ setErrorMessage }) {
         }
     }
 
-    const getAdmins = async () => {
+    const getAdmins = useCallback(async () => {
         try {
             const { data } = await axios.get('/api/admin/getadmins')
             if (data.success) {
@@ -38,11 +38,11 @@ export default function AdminSetting({ setErrorMessage }) {
         } catch (error) {
             setErrorMessage(error.message)
         }
-    }
+    }, [setErrorMessage])
 
     useEffect(() => {
         getAdmins()
-    }, [])
+    }, [getAdmins])
 
     return (
         <div className="settingform" style={{ display: 'flex', flexDirection: 'column' }}>
