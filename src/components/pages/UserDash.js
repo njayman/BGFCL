@@ -1,32 +1,30 @@
 import React, { useCallback, useState, useEffect } from 'react'
 import { useSelector } from "react-redux";
 import axios from "axios";
-function Guarentor({ gid, setErrorMessage }) {
-    const [guarentor, setGuarentor] = useState(null)
-    const getGuarentor = useCallback(async () => {
-        try {
-            if (gid !== "n/a" || null) {
-                const { data } = await axios.get(`/api/user/getuser/${gid}`)
-                if (data.success) {
-                    setGuarentor(data.user.fullname)
-                } else {
-                    setErrorMessage(data.message)
-                }
-            }
-        } catch (error) {
-            setErrorMessage(error.message)
-        }
-    }, [gid, setErrorMessage])
-    useEffect(() => {
-        getGuarentor()
-    }, [getGuarentor])
-    return <p>Loan guarentor: {guarentor}</p>
-}
+import { useHistory } from 'react-router-dom';
+
 export default function UserDash() {
     const { user } = useSelector((state) => state.auth);
     const [usr, setUsr] = useState({})
     const [loading, setLoading] = useState(false)
+    const [loanTypes, setLoanTypes] = useState([])
     const [errorMessage, setErrorMessage] = useState('')
+    const history = useHistory()
+
+    const checkLoanIssued = (loanname) => {
+        return usr?.loans?.some(loan => {
+            return loan.loanname === loanname
+        })
+    }
+
+    const getLoanTypes = async () => {
+        try {
+            const { data } = await axios.get(`/api/user/get/loantype`)
+            setLoanTypes(data.loantypes)
+        } catch (error) {
+            setErrorMessage(error.message)
+        }
+    }
 
     const getUser = useCallback(async () => {
         setLoading(true)
@@ -45,6 +43,7 @@ export default function UserDash() {
 
     useEffect(() => {
         getUser()
+        getLoanTypes()
     }, [getUser])
     if (loading) {
         return <div><p>loading . . .</p></div>
@@ -56,32 +55,42 @@ export default function UserDash() {
                     <p className="mainbody__title">User Dasboard {errorMessage ? <>| {errorMessage}</> : null}</p>
                 </div>
                 <div className="user__info">
-                    <h1>{usr.fullname}</h1>
-                    <p>{usr.email}</p>
-                    <p>{usr.phone}</p>
-                    <p>{usr.position}{", " + usr.designation}</p>
-                    <p>{usr.detail}</p>
+                    <h1>{usr?.fullname}</h1>
+                    <p>{usr?.email}</p>
+                    <p>{usr?.phone}</p>
+                    <p>{usr?.position}{", " + usr?.designation}</p>
+                    <p>{usr?.detail}</p>
                 </div>
                 <div className="user__info">
                     <h2>User Loans</h2>
-                    {usr.loans?.map((loan, id) => (
-                        <div key={id} className="loancard">
-                            <h4>{loan.loanname}</h4>
-                            <p>Loan comment: {loan.loancomment}</p>
-                            <p>Loan amount: {loan.loanamount}</p>
-                            <Guarentor gid={loan.guarentorid} setErrorMessage={e => setErrorMessage(e)} />
-                            <p>Loan paid back: {loan.loanpaidback}</p>
-                            <div>
-                                {loan.audits?.map((audit, id) => (
-                                    <fieldset className="loancard__audits" key={id}>
-                                        <legend>Audit no.: {id + 1}</legend>
-                                        <h4>Audit amount: {audit.amount}</h4>
-                                        <p>Audit date: {new Date(audit.auditdate).toLocaleString()}</p>
-                                    </fieldset>
-                                ))}
+                    <div className="loancontainer">
+
+                        {usr.loans?.map((lt, id) => (
+                            <div key={id} id="loanissued" className="user__loans">
+                                <h3>{lt.loanname}</h3>
+                                <p>Status: {checkLoanIssued(lt.loanname) ? "Issued" : "Not Issued"}</p>
+
+                                <button className="action__button" id={usr._id} onClick={e => history.push({
+                                    pathname: `/viewloan/${e.target.id}/${lt._id}`,
+                                })}>View loan status</button>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                        {loanTypes?.filter(ln => {
+                            return !usr.loans?.some(l => {
+                                return l._id !== ln._id && ln.loanname === l.loanname
+                            })
+                        }).map((lt, id) => (
+                            <div key={id} id="loannotissued" className="user__loans">
+                                <h3>{lt.loanname}</h3>
+                                <p>Status: Not Issued</p>
+                                <button id={usr._id} className="action__button" onClick={e => history.push({
+                                    pathname: `/requestloan/${e.target.id}`,
+                                    state: lt
+                                })}>Request Loan</button>
+                            </div>
+                        ))}
+                        <button className="action__button" onClick={() => history.push('/requesthomeloan')}>Request Home Loan</button>
+                    </div>
                 </div>
             </div>
         )
